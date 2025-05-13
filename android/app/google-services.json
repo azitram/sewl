@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "697650595519",
+    "project_id": "sewl-hanim",
+    "storage_bucket": "sewl-hanim.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:697650595519:android:36d368bbb448a9a242680a",
+        "android_client_info": {
+          "package_name": "com.example.sewl"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "697650595519-6vkkkcnut55hi307ocusgdhnv8ekv5pg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.sewl",
+            "certificate_hash": "76874df92f4958214ca1be7eb6eb0ffec8aa0812"
+          }
+        },
+        {
+          "client_id": "697650595519-m5t98bblivhdg2nuhn9k4oa7vuh7ajab.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAK414KDYMebrtTqyBpfHvmPWLuzljk9C0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "697650595519-m5t98bblivhdg2nuhn9k4oa7vuh7ajab.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
