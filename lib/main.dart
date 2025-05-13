@@ -4,6 +4,8 @@ import 'package:sewl/screens/login_screen.dart';
 import 'package:sewl/screens/choose_role_screen.dart';
 import 'package:sewl/screens/applicant_dashboard.dart';
 import 'package:sewl/screens/employer_dashboard.dart';
+import 'package:sewl/screens/applicant_setup_screen.dart';
+import 'package:sewl/screens/employer_setup_screen.dart';
 import 'package:sewl/screens/role_router.dart';
 
 void main() async {
@@ -20,12 +22,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Sewl',
       debugShowCheckedModeBanner: false,
-      home: const RoleRouter(),
+      theme: ThemeData(fontFamily: 'Poppins'),
+      home: const RoleRouter(), // Start with RoleRouter
       routes: {
         '/login': (context) => const LoginScreen(),
         '/choose-role': (context) => const ChooseRoleScreen(),
         '/applicant-dashboard': (context) => const ApplicantDashboard(),
         '/employer-dashboard': (context) => const EmployerDashboard(),
+        '/applicant-setup': (context) => const ApplicantSetupScreen(),
+        '/employer-setup': (context) => const EmployerSetupScreen(),
       },
     );
   }

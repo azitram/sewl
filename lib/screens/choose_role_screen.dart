@@ -13,11 +13,8 @@ class ChooseRoleScreen extends StatelessWidget {
         SetOptions(merge: true), // Prevents overwriting other fields
       );
 
-      if (role == 'employer') {
-        Navigator.pushReplacementNamed(context, '/employer-dashboard');
-      } else if (role == 'applicant') {
-        Navigator.pushReplacementNamed(context, '/applicant-dashboard');
-      }
+      // ✅ After setting the role, re-enter RoleRouter to decide next screen
+      Navigator.pushReplacementNamed(context, '/');
     }
   }
 
