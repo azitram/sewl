@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ApplicantJobCategoryAccessibility extends StatefulWidget {
   const ApplicantJobCategoryAccessibility({super.key});
 
   @override
-  State<ApplicantJobCategoryAccessibility> createState() =>
-      _ApplicantJobCategoryAccessibilityState();
+  State<ApplicantJobCategoryAccessibility> createState() => _ApplicantJobCategoryAccessibilityState();
 }
 
-class _ApplicantJobCategoryAccessibilityState
-    extends State<ApplicantJobCategoryAccessibility> {
+class _ApplicantJobCategoryAccessibilityState extends State<ApplicantJobCategoryAccessibility> {
   final List<String> jobCategories = [
     'Cook/Kitchen Helper',
     'Housekeeper/Cleaner',
@@ -25,11 +25,51 @@ class _ApplicantJobCategoryAccessibilityState
 
   String? selectedCategory;
   bool needsAccessibility = false;
+  bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
     selectedCategory = jobCategories[5]; // Default value
+  }
+
+  Future<void> _handleContinue() async {
+    setState(() => isLoading = true);
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+    final data = userDoc.data();
+
+    final hasSetup = data != null &&
+        data['applicantData'] != null &&
+        data['applicantData']['ktpPhotoUrl'] != null &&
+        data['applicantData']['profilePhotoUrl'] != null &&
+        data['applicantData']['interviewSummary'] != null;
+
+    setState(() => isLoading = false);
+
+    if (hasSetup) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ApplicantQuickApplyScreen(
+            category: selectedCategory!,
+            needsAccessibility: needsAccessibility,
+          ),
+        ),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => SewlMateInterviewScreen(
+            category: selectedCategory!,
+            needsAccessibility: needsAccessibility,
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -194,6 +234,34 @@ class _ApplicantJobCategoryAccessibilityState
                         ),
                       ],
                     ),
+                    const SizedBox(height: 32),
+                    Center(
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: isLoading ? null : _handleContinue,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFB4A89D),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          child: isLoading
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : const Text(
+                            'Continue',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
                   ],
                 ),
               ),
@@ -203,4 +271,20 @@ class _ApplicantJobCategoryAccessibilityState
       ),
     );
   }
+}
+
+class ApplicantQuickApplyScreen extends StatelessWidget {
+  final String category;
+  final bool needsAccessibility;
+  const ApplicantQuickApplyScreen({required this.category, required this.needsAccessibility, super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(body: Center(child: Text('Quick Apply for $category')));
+}
+
+class SewlMateInterviewScreen extends StatelessWidget {
+  final String category;
+  final bool needsAccessibility;
+  const SewlMateInterviewScreen({required this.category, required this.needsAccessibility, super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(body: Center(child: Text('SewlMate Interview for $category')));
 }
