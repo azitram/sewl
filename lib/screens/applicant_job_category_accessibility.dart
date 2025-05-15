@@ -43,10 +43,11 @@ class _ApplicantJobCategoryAccessibilityState
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFFFBE0B0), // Soft yellow
-              Color(0xFFFAF8F5), // Background color
+              Color(0xFFECC57F),
+              Color(0xFFFBE0B0),
+              Color(0xFFFEF2DE),
+              Color(0xFFFAF8F5),
             ],
-            stops: [0.1, 1.0],
           ),
         ),
         child: SafeArea(

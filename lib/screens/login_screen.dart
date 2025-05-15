@@ -71,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextSpan(
                   children: [
                     const TextSpan(
-                      text: 'sewl',
+                      text: 'sewl –',
                       style: TextStyle(
                         color: Color(0xFFE5B96A),
                         fontSize: 18,
@@ -82,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const TextSpan(
                       text:
-                      ' harmonizes people, purpose, and presence.',
+                      ' sewn with care, matched with soul',
                       style: TextStyle(
                         color: Color(0xFFE5B96A),
                         fontSize: 18,

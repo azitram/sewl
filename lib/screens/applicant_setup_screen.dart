@@ -93,7 +93,7 @@ class _ApplicantSetupScreenState extends State<ApplicantSetupScreen> {
         },
       }, SetOptions(merge: true));
 
-      Navigator.pushReplacementNamed(context, '/applicant_dashboard');
+      Navigator.pushReplacementNamed(context, '/applicant-dashboard');
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Submission failed: $e')),
@@ -110,12 +110,10 @@ class _ApplicantSetupScreenState extends State<ApplicantSetupScreen> {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFFD9A89E),
-              Color(0xFFDEB6AD),
-              Color(0xFFEBD3CD),
-              Color(0xFFF0E2DD),
+              Color(0xFFECC57F),
+              Color(0xFFFBE0B0),
+              Color(0xFFFEF2DE),
               Color(0xFFFAF8F5),
-              Color(0xFFF7F1EE),
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -130,9 +128,9 @@ class _ApplicantSetupScreenState extends State<ApplicantSetupScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Set up your profile',
+                    'Every thread tells a story — start yours here.',
                     style: TextStyle(
-                      fontSize: 25,
+                      fontSize: 20,
                       fontWeight: FontWeight.w600,
                       fontFamily: 'Poppins',
                       color: Color(0xFF3E3E3E),
@@ -197,7 +195,7 @@ class _ApplicantSetupScreenState extends State<ApplicantSetupScreen> {
                             _buildLabel('Name (Endorsement ${i + 1})'),
                             TextButton(
                               onPressed: () => setState(() => endorsements.removeAt(i)),
-                              child: const Text('Remove', style: TextStyle(color: Colors.red)),
+                              child: const Text('Remove', style: TextStyle(color: Color(0xff3E3E3E))),
                             ),
                           ],
                         ),

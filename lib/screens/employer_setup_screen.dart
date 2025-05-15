@@ -70,7 +70,7 @@ class _EmployerSetupScreenState extends State<EmployerSetupScreen> {
         }
       }, SetOptions(merge: true));
 
-      Navigator.pushReplacementNamed(context, '/employer_dashboard');
+      Navigator.pushReplacementNamed(context, '/employer-dashboard');
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Submission failed: $e')),
@@ -107,9 +107,9 @@ class _EmployerSetupScreenState extends State<EmployerSetupScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Set up your profile',
+                    'Every thread tells a story — start yours here.',
                     style: TextStyle(
-                      fontSize: 25,
+                      fontSize: 20,
                       fontWeight: FontWeight.w600,
                       fontFamily: 'Poppins',
                       color: Color(0xFF3E3E3E),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:sewl/screens/employer_job_post_screen.dart';
 import 'package:sewl/screens/login_screen.dart';
 import 'package:sewl/screens/choose_role_screen.dart';
 import 'package:sewl/screens/applicant_dashboard.dart';
@@ -31,6 +32,7 @@ class MyApp extends StatelessWidget {
         '/employer-dashboard': (context) => const EmployerDashboard(),
         '/applicant-setup': (context) => const ApplicantSetupScreen(),
         '/employer-setup': (context) => const EmployerSetupScreen(),
+        '/job-post': (context) => const EmployerJobPostScreen(),
       },
     );
   }
