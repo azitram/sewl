@@ -7,6 +7,8 @@ class EmployerDashboard extends StatelessWidget {
 
   Future<List<Map<String, dynamic>>> _fetchEmployerJobs() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
+    print('Current UID: $uid'); // 🔍 Print your UID
+
     if (uid == null) return [];
 
     final query = await FirebaseFirestore.instance
@@ -15,7 +17,13 @@ class EmployerDashboard extends StatelessWidget {
         .orderBy('preferredStartDate')
         .get();
 
-    return query.docs.map((doc) => doc.data()).toList();
+    print('Jobs fetched: ${query.docs.length}'); // 🔍 Print how many jobs matched
+
+    return query.docs.map((doc) {
+      final data = doc.data();
+      data['id'] = doc.id;
+      return data;
+    }).toList();
   }
 
   @override
@@ -90,7 +98,6 @@ class EmployerDashboard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // Create Job Listing button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
@@ -183,7 +190,6 @@ class EmployerDashboard extends StatelessWidget {
     final salary = job['salary']?['amount'] ?? 0;
     final jobType = job['jobType'] ?? 'Unknown Type';
     final status = job['status'] ?? 'active';
-
     final isClosed = status.toLowerCase() == 'closed';
 
     return Container(
@@ -263,6 +269,7 @@ class EmployerDashboard extends StatelessWidget {
           GestureDetector(
             onTap: () {
               // TODO: Navigate to review submissions screen
+              // final jobId = job['id'];
               // Navigator.pushNamed(context, '/review-submissions', arguments: jobId);
             },
             child: const Text(
