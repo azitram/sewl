@@ -67,6 +67,9 @@ class _EmployerSetupScreenState extends State<EmployerSetupScreen> {
         'employerData': {
           'companyName': companyName,
           'postedJobs': [],
+          'interviewSummary': '',
+          'sentimentScore': null,
+          'interviewTraits': [],
         }
       }, SetOptions(merge: true));
 
