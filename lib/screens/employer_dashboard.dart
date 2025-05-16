@@ -1,23 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'employer_review_submissions_screen.dart';
 
-class EmployerDashboard extends StatelessWidget {
+class EmployerDashboard extends StatefulWidget {
   const EmployerDashboard({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) {
-      return const Scaffold(body: Center(child: Text("User not logged in")));
-    }
+  State<EmployerDashboard> createState() => _EmployerDashboardState();
+}
 
+class _EmployerDashboardState extends State<EmployerDashboard> {
+  late Future<List<Map<String, dynamic>>> _jobsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _jobsFuture = _fetchEmployerJobs();
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchEmployerJobs() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return [];
+
+    debugPrint("Current UID: $uid");
+
+    final query = await FirebaseFirestore.instance
+        .collection('jobs')
+        .where('createdBy', isEqualTo: uid)
+        .orderBy('preferredStartDate')
+        .get();
+
+    final jobs = query.docs.map((doc) {
+      final data = doc.data();
+      data['id'] = doc.id;
+      return data;
+    }).toList();
+
+    debugPrint("Jobs fetched: ${jobs.length}");
+    return jobs;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFAF8F5),
       body: SafeArea(
         child: Column(
           children: [
-            // Header
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(28, 36, 28, 20),
@@ -132,19 +162,14 @@ class EmployerDashboard extends StatelessWidget {
             const SizedBox(height: 10),
 
             Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('jobs')
-                    .where('createdBy', isEqualTo: uid)
-                    .orderBy('preferredStartDate')
-                    .snapshots(),
+              child: FutureBuilder<List<Map<String, dynamic>>>(
+                future: _jobsFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
 
-                  final docs = snapshot.data?.docs ?? [];
-                  final jobs = docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+                  final jobs = snapshot.data ?? [];
 
                   if (jobs.isEmpty) {
                     return const Center(
@@ -179,6 +204,7 @@ class EmployerDashboard extends StatelessWidget {
     final salary = job['salary']?['amount'] ?? 0;
     final jobType = job['jobType'] ?? 'Unknown Type';
     final status = job['status'] ?? 'active';
+    final jobId = job['id'];
 
     final isClosed = status.toLowerCase() == 'closed';
 
@@ -258,8 +284,12 @@ class EmployerDashboard extends StatelessWidget {
           const SizedBox(height: 8),
           GestureDetector(
             onTap: () {
-              // TODO: Navigate to review submissions screen
-              // Navigator.pushNamed(context, '/review-submissions', arguments: jobId);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => EmployerReviewSubmissionsScreen(jobId: jobId),
+                ),
+              );
             },
             child: const Text(
               'review submissions',

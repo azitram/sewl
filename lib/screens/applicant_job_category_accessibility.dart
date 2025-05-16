@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:sewl/screens/sewlmate_interview_screen.dart'; // adjust this path to your actual file
+import 'package:sewl/screens/sewlmate_interview_screen.dart';
 
 class ApplicantJobCategoryAccessibility extends StatefulWidget {
   const ApplicantJobCategoryAccessibility({super.key});
@@ -31,7 +31,7 @@ class _ApplicantJobCategoryAccessibilityState extends State<ApplicantJobCategory
   @override
   void initState() {
     super.initState();
-    selectedCategory = jobCategories[5]; // Default value
+    selectedCategory = jobCategories[5];
   }
 
   Future<void> _handleContinue() async {
@@ -39,7 +39,17 @@ class _ApplicantJobCategoryAccessibilityState extends State<ApplicantJobCategory
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+    final uid = user.uid;
+
+    // Save selectedCategory and accessibility to Firestore
+    await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      'applicantData': {
+        'preferredCategory': selectedCategory,
+        'needsAccessibility': needsAccessibility,
+      }
+    }, SetOptions(merge: true));
+
+    final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
     final data = userDoc.data();
 
     final hasInterview = data != null &&

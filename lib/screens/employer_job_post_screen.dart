@@ -3,6 +3,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 
+const List<String> jobRoles = [
+  'Cook/Kitchen Helper',
+  'Housekeeper/Cleaner',
+  'Babysitter/Nanny',
+  'Elderly Caregiver',
+  'Shop Helper/Cashier',
+  'Food Stall Worker',
+  'Driver/Delivery',
+  'Tailor/Seamstress',
+  'Handyman/Repair',
+  'Crafts',
+];
+
 class EmployerJobPostScreen extends StatefulWidget {
   const EmployerJobPostScreen({super.key});
 
@@ -14,7 +27,7 @@ class _EmployerJobPostScreenState extends State<EmployerJobPostScreen> {
   final _formKey = GlobalKey<FormState>();
 
   // Text Fields
-  String role = '';
+  String role = jobRoles[0];
   String description = '';
   String jobType = 'full-time';
   String workingStart = '';
@@ -147,7 +160,7 @@ class _EmployerJobPostScreenState extends State<EmployerJobPostScreen> {
               key: _formKey,
               child: Column(
                 children: [
-                  _buildTextField('Job Role', (val) => role = val),
+                  _buildDropdownField('Job Role', jobRoles, role, (val) => setState(() => role = val!)),
                   _buildTextField('Job Description', (val) => description = val, maxLines: 3),
                   _buildDropdownField('Job Type', ['full-time', 'part-time', 'one-time'], jobType, (val) => setState(() => jobType = val!)),
 

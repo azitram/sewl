@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'applicant_job_category_accessibility.dart';
+import 'applicant_recommended_job_screen.dart';
 
 class ApplicantDashboard extends StatefulWidget {
   const ApplicantDashboard({super.key});
@@ -11,32 +12,35 @@ class ApplicantDashboard extends StatefulWidget {
 }
 
 class _ApplicantDashboardState extends State<ApplicantDashboard> {
-  Future<List<Map<String, dynamic>>> _fetchAppliedJobs() async {
+  Stream<List<Map<String, dynamic>>> _appliedJobsStream() async* {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return [];
-
-    final apps = await FirebaseFirestore.instance
-        .collection('applications')
-        .where('applicantId', isEqualTo: user.uid)
-        .get();
-
-    List<Map<String, dynamic>> results = [];
-
-    for (var app in apps.docs) {
-      final jobRef = app['jobRef'] as DocumentReference;
-      final jobSnap = await jobRef.get();
-      if (!jobSnap.exists) continue;
-      final jobData = jobSnap.data() as Map<String, dynamic>;
-      results.add({
-        'role': jobData['role'],
-        'storeName': jobData['contactInfo']['name'],
-        'salary': jobData['salary']['amount'],
-        'jobType': jobData['jobType'],
-        'status': app['status'],
-      });
+    if (user == null) {
+      yield [];
+      return;
     }
 
-    return results;
+    await for (var apps in FirebaseFirestore.instance
+        .collection('applications')
+        .where('applicantId', isEqualTo: user.uid)
+        .snapshots()) {
+      List<Map<String, dynamic>> results = [];
+
+      for (var app in apps.docs) {
+        final jobRef = app['jobRef'] as DocumentReference;
+        final jobSnap = await jobRef.get();
+        if (!jobSnap.exists) continue;
+        final jobData = jobSnap.data() as Map<String, dynamic>;
+        results.add({
+          'role': jobData['role'],
+          'storeName': jobData['contactInfo']['name'],
+          'salary': jobData['salary']['amount'],
+          'jobType': jobData['jobType'],
+          'status': app['status'],
+        });
+      }
+
+      yield results;
+    }
   }
 
   Widget _buildStatusBadge(String status) {
@@ -140,6 +144,37 @@ class _ApplicantDashboardState extends State<ApplicantDashboard> {
                     ),
                   ),
                 ),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ApplicantRecommendedJobsScreen(),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    margin: const EdgeInsets.only(top: 12),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFB4D4AD), Color(0xFF88B48B)],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        '🔎 Job Recommendations',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF3E3E3E),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 30),
                 const Text(
                   'Jobs Applied',
@@ -151,8 +186,8 @@ class _ApplicantDashboardState extends State<ApplicantDashboard> {
                 ),
                 const SizedBox(height: 12),
                 Expanded(
-                  child: FutureBuilder<List<Map<String, dynamic>>>(
-                    future: _fetchAppliedJobs(),
+                  child: StreamBuilder<List<Map<String, dynamic>>>(
+                    stream: _appliedJobsStream(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());

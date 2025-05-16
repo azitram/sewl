@@ -40,28 +40,29 @@ class RoleRouter extends StatelessWidget {
         final role = data['role'];
 
         if (role == 'applicant') {
-          final applicantData = data['applicantData'] ?? {};
-          final hasSetup = applicantData['ktpPhotoUrl'] != null && applicantData['profilePhotoUrl'] != null;
-          final hasInterviewed = applicantData['interviewSummary'] != null &&
-              (applicantData['interviewSummary'] as String).trim().isNotEmpty;
+          final isSetupDone = data.containsKey('applicantData') &&
+              data['ktpPhotoUrl'] != null &&
+              data['profilePhotoUrl'] != null;
 
-          if (!hasSetup) return const ApplicantSetupScreen();
-          if (!hasInterviewed) return const SewlMateInterviewScreen();
-          return const ApplicantDashboard();
+          return isSetupDone ? const ApplicantDashboard() : const ApplicantSetupScreen();
         }
 
         if (role == 'employer') {
-          final employerData = data['employerData'] ?? {};
-          final hasSetup = employerData['companyName'] != null;
-          final hasInterviewed = employerData['interviewSummary'] != null &&
+          final employerData = data['employerData'];
+          final isSetupDone = employerData != null && employerData['companyName'] != null;
+
+          final hasInterview = employerData != null &&
+              employerData['interviewSummary'] != null &&
               (employerData['interviewSummary'] as String).trim().isNotEmpty;
 
-          if (!hasSetup) return const EmployerSetupScreen();
-          if (!hasInterviewed) return const SewlMateInterviewScreen();
-          return const EmployerDashboard();
+          if (isSetupDone && !hasInterview) {
+            return const SewlMateInterviewScreen();
+          }
+
+          return isSetupDone ? const EmployerDashboard() : const EmployerSetupScreen();
         }
 
-        return const ChooseRoleScreen(); // fallback
+        return const ChooseRoleScreen();
       },
     );
   }
