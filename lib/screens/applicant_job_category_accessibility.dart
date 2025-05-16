@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:sewl/screens/sewlmate_interview_screen.dart'; // adjust this path to your actual file
 
 class ApplicantJobCategoryAccessibility extends StatefulWidget {
   const ApplicantJobCategoryAccessibility({super.key});
@@ -41,15 +42,14 @@ class _ApplicantJobCategoryAccessibilityState extends State<ApplicantJobCategory
     final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
     final data = userDoc.data();
 
-    final hasSetup = data != null &&
+    final hasInterview = data != null &&
         data['applicantData'] != null &&
-        data['applicantData']['ktpPhotoUrl'] != null &&
-        data['applicantData']['profilePhotoUrl'] != null &&
-        data['applicantData']['interviewSummary'] != null;
+        data['applicantData']['interviewSummary'] != null &&
+        (data['applicantData']['interviewSummary'] as String).trim().isNotEmpty;
 
     setState(() => isLoading = false);
 
-    if (hasSetup) {
+    if (hasInterview) {
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -63,10 +63,7 @@ class _ApplicantJobCategoryAccessibilityState extends State<ApplicantJobCategory
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => SewlMateInterviewScreen(
-            category: selectedCategory!,
-            needsAccessibility: needsAccessibility,
-          ),
+          builder: (_) => const SewlMateInterviewScreen(),
         ),
       );
     }
@@ -279,12 +276,4 @@ class ApplicantQuickApplyScreen extends StatelessWidget {
   const ApplicantQuickApplyScreen({required this.category, required this.needsAccessibility, super.key});
   @override
   Widget build(BuildContext context) => Scaffold(body: Center(child: Text('Quick Apply for $category')));
-}
-
-class SewlMateInterviewScreen extends StatelessWidget {
-  final String category;
-  final bool needsAccessibility;
-  const SewlMateInterviewScreen({required this.category, required this.needsAccessibility, super.key});
-  @override
-  Widget build(BuildContext context) => Scaffold(body: Center(child: Text('SewlMate Interview for $category')));
 }

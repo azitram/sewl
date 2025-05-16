@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sewl/screens/employer_job_post_screen.dart';
 import 'package:sewl/screens/login_screen.dart';
 import 'package:sewl/screens/choose_role_screen.dart';
@@ -11,6 +12,7 @@ import 'package:sewl/screens/role_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load();
   await Firebase.initializeApp();
   runApp(const MyApp());
 }
