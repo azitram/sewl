@@ -5,29 +5,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 class EmployerDashboard extends StatelessWidget {
   const EmployerDashboard({super.key});
 
-  Future<List<Map<String, dynamic>>> _fetchEmployerJobs() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    print('Current UID: $uid'); // 🔍 Print your UID
-
-    if (uid == null) return [];
-
-    final query = await FirebaseFirestore.instance
-        .collection('jobs')
-        .where('createdBy', isEqualTo: uid)
-        .orderBy('preferredStartDate')
-        .get();
-
-    print('Jobs fetched: ${query.docs.length}'); // 🔍 Print how many jobs matched
-
-    return query.docs.map((doc) {
-      final data = doc.data();
-      data['id'] = doc.id;
-      return data;
-    }).toList();
-  }
-
   @override
   Widget build(BuildContext context) {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      return const Scaffold(body: Center(child: Text("User not logged in")));
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFFAF8F5),
       body: SafeArea(
@@ -148,14 +132,19 @@ class EmployerDashboard extends StatelessWidget {
             const SizedBox(height: 10),
 
             Expanded(
-              child: FutureBuilder<List<Map<String, dynamic>>>(
-                future: _fetchEmployerJobs(),
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('jobs')
+                    .where('createdBy', isEqualTo: uid)
+                    .orderBy('preferredStartDate')
+                    .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
 
-                  final jobs = snapshot.data ?? [];
+                  final docs = snapshot.data?.docs ?? [];
+                  final jobs = docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
 
                   if (jobs.isEmpty) {
                     return const Center(
@@ -190,6 +179,7 @@ class EmployerDashboard extends StatelessWidget {
     final salary = job['salary']?['amount'] ?? 0;
     final jobType = job['jobType'] ?? 'Unknown Type';
     final status = job['status'] ?? 'active';
+
     final isClosed = status.toLowerCase() == 'closed';
 
     return Container(
@@ -269,7 +259,6 @@ class EmployerDashboard extends StatelessWidget {
           GestureDetector(
             onTap: () {
               // TODO: Navigate to review submissions screen
-              // final jobId = job['id'];
               // Navigator.pushNamed(context, '/review-submissions', arguments: jobId);
             },
             child: const Text(

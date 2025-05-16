@@ -6,7 +6,8 @@ import 'choose_role_screen.dart';
 import 'applicant_dashboard.dart';
 import 'applicant_setup_screen.dart';
 import 'employer_dashboard.dart';
-import 'employer_setup_screen.dart'; // Create this next
+import 'employer_setup_screen.dart';
+import 'sewlmate_interview_screen.dart';
 
 class RoleRouter extends StatelessWidget {
   const RoleRouter({super.key});
@@ -39,19 +40,25 @@ class RoleRouter extends StatelessWidget {
         final role = data['role'];
 
         if (role == 'applicant') {
-          final isSetupDone = data.containsKey('applicantData') &&
-              data['ktpPhotoUrl'] != null &&
-              data['profilePhotoUrl'] != null;
+          final applicantData = data['applicantData'] ?? {};
+          final hasSetup = applicantData['ktpPhotoUrl'] != null && applicantData['profilePhotoUrl'] != null;
+          final hasInterviewed = applicantData['interviewSummary'] != null &&
+              (applicantData['interviewSummary'] as String).trim().isNotEmpty;
 
-          return isSetupDone ? const ApplicantDashboard() : const ApplicantSetupScreen();
+          if (!hasSetup) return const ApplicantSetupScreen();
+          if (!hasInterviewed) return const SewlMateInterviewScreen();
+          return const ApplicantDashboard();
         }
 
         if (role == 'employer') {
-          final isSetupDone = data.containsKey('employerData') &&
-              data['employerData'] != null &&
-              data['employerData']['companyName'] != null;
+          final employerData = data['employerData'] ?? {};
+          final hasSetup = employerData['companyName'] != null;
+          final hasInterviewed = employerData['interviewSummary'] != null &&
+              (employerData['interviewSummary'] as String).trim().isNotEmpty;
 
-          return isSetupDone ? const EmployerDashboard() : const EmployerSetupScreen();
+          if (!hasSetup) return const EmployerSetupScreen();
+          if (!hasInterviewed) return const SewlMateInterviewScreen();
+          return const EmployerDashboard();
         }
 
         return const ChooseRoleScreen(); // fallback
