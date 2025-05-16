@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sewl/prompts/sewlmate_prompts.dart';
 
 class SewlMateInterviewScreen extends StatefulWidget {
   const SewlMateInterviewScreen({super.key});
@@ -14,6 +15,7 @@ class SewlMateInterviewScreen extends StatefulWidget {
 
 class _SewlMateInterviewScreenState extends State<SewlMateInterviewScreen> {
   bool isLoading = false;
+  bool accessible = false;
   List<String> questions = [];
   List<String> answers = [];
   int currentQuestion = 0;
@@ -40,9 +42,7 @@ class _SewlMateInterviewScreenState extends State<SewlMateInterviewScreen> {
     setState(() => isLoading = true);
 
     try {
-      final prompt = role == 'applicant'
-          ? "Generate 3 situational interview questions for a domestic worker to assess reliability, communication, and work ethic."
-          : "Generate 3 situational interview questions for a household employer to assess expectations, communication style, and management preferences.";
+      final prompt = role == 'applicant' ? sewlmateApplicantPrompt : sewlmateEmployerPrompt;
 
       final response = await http.post(
         Uri.parse("https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${dotenv.env['GEMINI_API_KEY']!}"),
@@ -66,17 +66,10 @@ class _SewlMateInterviewScreenState extends State<SewlMateInterviewScreen> {
       }
 
       final data = jsonDecode(response.body);
+      final raw = data['candidates'][0]['content']['parts'][0]['text'] as String;
 
-      if (data['candidates'] == null || data['candidates'].isEmpty) {
-        throw Exception('Gemini response missing candidates.');
-      }
-
-      final rawText = data['candidates'][0]['content']['parts'][0]['text'] as String;
-      final parsed = rawText
-          .split(RegExp(r"\n+|\d+[.)]"))
-          .map((q) => q.trim())
-          .where((q) => q.isNotEmpty)
-          .toList();
+      final cleaned = raw.replaceAll(RegExp(r'^```json|```$', multiLine: true), '').trim();
+      final parsed = List<String>.from(jsonDecode(cleaned));
 
       setState(() {
         questions = parsed.take(3).toList();
@@ -85,7 +78,6 @@ class _SewlMateInterviewScreenState extends State<SewlMateInterviewScreen> {
     } catch (e) {
       print("Gemini error: $e");
       setState(() => isLoading = false);
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to load questions: $e')),
       );
@@ -104,7 +96,7 @@ class _SewlMateInterviewScreenState extends State<SewlMateInterviewScreen> {
         "You are SewlMate. Analyze the following interview and summarize the applicant's or employer's personality traits, sentiment, and work style. Return a JSON with keys: summary, traits (list), sentimentScore (0 to 1). Interview:\n$qnaText";
 
     final response = await http.post(
-      Uri.parse("https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${dotenv.env['GEMINI_API_KEY']!}"),
+      Uri.parse("https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${dotenv.env['GEMINI_API_KEY']!}"),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         "contents": [
@@ -117,8 +109,9 @@ class _SewlMateInterviewScreenState extends State<SewlMateInterviewScreen> {
       }),
     );
 
-    final content = jsonDecode(response.body)['candidates'][0]['content']['parts'][0]['text'];
-    final result = jsonDecode(content);
+    final content = jsonDecode(response.body)['candidates'][0]['content']['parts'][0]['text'] as String;
+    final cleaned = content.replaceAll(RegExp(r'^```json|```$', multiLine: true), '').trim();
+    final result = jsonDecode(cleaned);
 
     final summary = result['summary'];
     final traits = List<String>.from(result['traits']);
@@ -127,17 +120,29 @@ class _SewlMateInterviewScreenState extends State<SewlMateInterviewScreen> {
     await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
       role == 'applicant' ? 'applicantData' : 'employerData': {
         'interviewSummary': summary,
-        'interviewTraits': traits,
+        'personalityTraits': traits,
         'sentimentScore': sentimentScore,
       }
     }, SetOptions(merge: true));
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (_) => AlertDialog(
         title: const Text('Interview Completed'),
         content: Text('Summary: $summary\n\nTraits: ${traits.join(", ")}\nSentiment: $sentimentScore'),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              Navigator.pushReplacementNamed(
+                context,
+                role == 'applicant' ? '/applicant-dashboard' : '/employer-dashboard',
+              );
+            },
+            child: const Text('Continue'),
+          ),
+        ],
       ),
     );
   }
@@ -222,6 +227,30 @@ class _SewlMateInterviewScreenState extends State<SewlMateInterviewScreen> {
                   ),
                 ),
                 Positioned(
+                  left: 36,
+                  top: 435,
+                  child: Row(
+                    children: [
+                      const Text(
+                        'Accessible Interview',
+                        style: TextStyle(
+                          color: Color(0xFF3E3E3E),
+                          fontSize: 16,
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      Switch(
+                        value: accessible,
+                        onChanged: (val) => setState(() => accessible = val),
+                        activeColor: Color(0xFF50604D),
+                        activeTrackColor: Color(0xFFB4D4AD),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
                   bottom: 80,
                   left: 100,
                   right: 100,
@@ -286,7 +315,8 @@ class _SewlMateInterviewScreenState extends State<SewlMateInterviewScreen> {
                         fontSize: 20,
                         fontWeight: FontWeight.w500,
                         fontFamily: 'Poppins',
-                        color: Color(0xFF3E3E3E))),
+                        color: Color(0xFF3E3E3E)),
+                    textAlign: TextAlign.center),
                 const SizedBox(height: 32),
                 TextField(
                   controller: answerController,
